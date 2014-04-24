@@ -1,0 +1,46 @@
+from pdfminer.pdfinterp import PDFResourceManager
+from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
+from pdfminer.layout import LAParams
+from pdfminer.converter import HTMLConverter#, TextConverter
+from pdfminer.pdfpage import PDFPage
+from bs4 import BeautifulSoup
+import yaml
+from HTMLParser import HTMLParser
+import copy, re
+outfile = 'C:\\Users\Nick\downloads\parsethis.html'
+fname = 'C:\\Users\Nick\downloads\inmates.pdf'
+outfp = file(outfile, 'w')
+codec = 'utf-8'
+scale = 2
+layoutmode = 'normal'
+laparams = LAParams()
+imagewriter = None
+pagenos = set()
+maxpages = 1
+password = ''
+caching = True
+rotation = 0
+rsrcmgr = PDFResourceManager(caching=caching)
+device = HTMLConverter(rsrcmgr, outfp, codec=codec, scale=scale, layoutmode = layoutmode, laparams = laparams, imagewriter = imagewriter)
+fp = file(fname, 'rb')
+interpreter = PDFPageInterpreter(rsrcmgr, device)
+for page in PDFPage.get_pages(fp, pagenos, maxpages = maxpages, password = password, caching = caching, check_extractable=True):
+    page.rotate = (page.rotate+rotation)%360
+    interpreter.process_page(page)
+fp.close()
+device.close()
+soup = open('C:\\Users\Nick\downloads\parsethis.html')
+class MLStripper(HTMLParser):
+      	def __init__(self):
+    		self.reset()
+    		self.fed = []
+    	def handle_data(self, d):
+    		self.fed.append(d)
+    	def get_data(self):
+    		return ''.join(self.fed)
+def strip_tags(html):
+    s = MLStripper()
+    s.feed(html)
+    return s.get_data()
+soup2 = str(BeautifulSoup(soup))
+text = strip_tags(soup2)
